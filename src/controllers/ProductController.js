@@ -9,16 +9,38 @@ const getProducts = async (req, res) => {
         const hateoas = {
             totalProductos: Productos.length,
             productos: Productos,
-            // links: {
-            //     self: `/productos?limits=${limits}&page=${page}&order_by=${order_by}`,
-            //     next: `/productos?limits=${limits}&page=${parseInt(page) + 1}&order_by=${order_by}`,
-            // },
+            links: {
+                self: `/productos?limits=${limits}&page=${page}&order_by=${order_by}`,
+                next: `/productos?limits=${limits}&page=${parseInt(page) + 1}&order_by=${order_by}`,
+            },
         };
 
         res.json(hateoas);
     } catch (error) {
         console.error('Error en getProducts:', error);
         res.status(500).json({ error: 'Error en la consulta productos' });
+    }
+};
+const addProduct = async (req, res) => {
+    try {
+        const productData = req.body;
+        const newProduct = await createProduct(productData);
+        res.status(201).json(newProduct);
+    } catch (error) {
+        console.error('Error en addProduct:', error);
+        res.status(500).json({ error: 'Error al crear el producto' });
+    }
+};
+
+const updateProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const productData = req.body;
+        const updatedProduct = await updateProduct(id, productData);
+        res.status(200).json(updatedProduct);
+    } catch (error) {
+        console.error('Error en updateProduct:', error);
+        res.status(500).json({ error: 'Error al actualizar el producto' });
     }
 };
 
@@ -34,5 +56,5 @@ const getProducts = async (req, res) => {
 //     }
 // };
 
-
-module.exports = { getProducts };
+console.log({ getProducts, addProduct, updateProduct });
+module.exports = { getProducts , addProduct, updateProduct };

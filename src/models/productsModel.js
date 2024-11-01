@@ -1,37 +1,38 @@
-
 const pool = require('../db/db');
 
-const getAllProducts = async () => {
+//obteniendo todos los productos
+const getAllProducts = async (limits = 10, offset = 0, orderField = 'id', orderDirection = 'ASC') => {
 
-    const query = `SELECT * FROM Productos`;
-    const response = await pool.query(query);
+    const query = `
+    SELECT * FROM Productos
+    ORDER BY ${orderField} ${orderDirection}
+    LIMIT $1 OFFSET $2;
+    `;
+    const response = await pool.query(query, [limits, offset]);
     return response.rows;
 
 };
 
+//agregar producto
 const createProduct = async (productData) => {
     const { id, nombre, imagen_url, descripcion, precio, categoria_id, stock } = productData;
-    
-    // Backticks encapsulando toda la consulta
+     
     const query = `
-      INSERT INTO Productos (id, nombre, imagen_url, descripcion, precio, categoria_id, stock)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO Productos ( nombre, imagen_url, descripcion, precio, categoria_id, stock)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *;
     `;
   
-    const result = await pool.query(query, [id, nombre, imagen_url, descripcion, precio, categoria_id, stock]);
+    const result = await pool.query(query, [ nombre, imagen_url, descripcion, precio, categoria_id, stock]);
     return result.rows[0];
   };
 
-//     res.status(201).json(result.rows[0]);
-// }
-
-
+//actualizar producto
 const updateProduct = async (req, res) => {
     const { id } = req.params;
     const { nombre, imagen_url, descripcion, precio, categoria_id, stock } = req.body;
     const result = await pool.query(
-      `UPDATE products
+      `UPDATE Productos
        SET nombre = $1, imagen_url = $2, descripcion = $3, precio = $4, categoria_id = $5, stock = $6
        WHERE id = $7
        RETURNING *;`,
