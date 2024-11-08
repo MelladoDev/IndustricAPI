@@ -1,16 +1,14 @@
-const pool = require('../db/DbConnection');
+const { UserModel } = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 
-const UserModel = () => {
-//obtener usuario
- getUser = async (req, res) => {
+const getUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM usuarios WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
+    const result = await UserModel.getUser(id);
+    if (result.length === 0) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
-    res.json(result.rows[0]);
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al obtener el usuario' });
@@ -19,12 +17,13 @@ const UserModel = () => {
 
 // evitar email repetidos
 const findByEmail = async (email) => {
-  const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
-  return result.rows[0];
+  const result = await UserModel.findByEmail(email);
+  return result;
 };
-  
+
 //crear usuario  
 const createUser = async (req, res) => {
+  try {
     const { nombre, email, password } = req.body; 
 
     const existingUser = await findByEmail(email);
@@ -35,11 +34,16 @@ const createUser = async (req, res) => {
 // encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await pool.query(
-      'INSERT INTO Usuarios (nombre, email, password) VALUES ($1, $2, $3) RETURNING *',
-      [nombre, email, hashedPassword ]
+    const result = await UserModel.createUser(
+      nombre,
+      email,
+      hashedPassword
     );
-    return res.status(201).json(result.rows[0]);
+    return res.status(201).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al crear el usuario' });
+  }
 };
 
 //actualizando usuario
@@ -51,45 +55,36 @@ const updateUser = async (req, res) => {
     // Encriptar la nueva contraseña si se proporciona
     const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
 
-    const result = await pool.query(
-      `UPDATE usuarios
-       SET nombre = $1, email = $2, password = COALESCE($3, password)
-       WHERE id = $4
-       RETURNING *;`,
-      [name, email, hashedPassword, id]
+    const result = await UserModel.updateUser(
+      id,
+      name,
+      email,
+      hashedPassword
     );
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    res.json(result.rows[0]);
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al actualizar el usuario' });
   }
-};
+  };
 
-// eliminar usuario
-const updateUserCondition = async (newCondition, userId) => {
-  const query = `
-  UPDATE usuarios 
-  SET condicion = $1
-  WHERE id = $2
-  RETURNING *;
-  `;
+  //eliminar usuario
+  const deactivateUser = async (req, res) => {
   try {
-    const result = await pool.query(query, [newCondition, userId]);
-    if (result.rows.length === 0) { 
-      return res.status(404).json({ message: 'Usuario no encontrado' });
-    }
-    res.json(result.rows[0]);
+    const { id } = req.params;
+    const newCondition = req.body;
+    const deactivateUser = await UserModel.updateUserCondition(id, newCondition);
+    res.json(deactivateUser);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al actualizar el usuario' });
   }
-  
 };
-}
 
-module.exports = {UserModel};
+console.log({ getUser, findByEmail, createUser, updateUser, deactivateUser });
+module.exports = { getUser, findByEmail, createUser, updateUser, deactivateUser };

@@ -19,4 +19,4 @@ app.use('/api/v1/products', productsRouter);
 const PORT = process.env.SERVER_PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
-});
+}); 

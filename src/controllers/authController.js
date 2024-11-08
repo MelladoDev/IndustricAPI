@@ -2,8 +2,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
-const pool = require('./../db/db');
-const mailSender = require('./../services/emailService');
+const pool = require('../db/DbConnection');
+const MailSender = require('../services/emailService');
 
 
 exports.register = async (req, res) => {
@@ -21,13 +21,13 @@ exports.register = async (req, res) => {
     );
 
     
-    // const content = {
-    //   to: email,
-    //   subject: 'Registro exitoso',
-    //   html: `<h1>Bienvenido ${nombre} a Industric</h1>`,
-    // };
+    const content = {
+      to: email,
+      subject: 'Registro exitoso',
+      html: `<h1>Bienvenido ${nombre} a Industric</h1>`,
+    };
 
-    // mailSender(content);
+    mailSender(content);
 
     res.status(201).json(newUser.rows[0]);
 
