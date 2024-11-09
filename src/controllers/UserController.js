@@ -1,28 +1,50 @@
-const { UserModel } = require('../models/userModel');
+const { getUser, getAllUsers, findByEmail, createUser, updateUser, updateUserCondition } = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 
-const getUser = async (req, res) => {
+const getUserController = async (req, res) => {
+  console.log('req.paramsController: ',req.params);
   try {
-    const { id } = req.params;
-    const result = await UserModel.getUser(id);
-    if (result.length === 0) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
+    const { id } = req.params;// Extrae el id de los parámetros de la ruta
+    console.log('idFromReq.Params: ',id);
+    console.log('idFromReq.Params type: ',typeof id);
+    const result = await getUser(parseInt(id));// Llama a la función getUser del module pasandole el id
+    if (result.length === 0) {// Verifica si el resultado está vacío
+      // return res.status(404).json({ message: 'Usuario no encontrado' });
+      return res.status(404).json({ status: 404, message: 'Usuario no encontrado' });
+    }else{
+      // Devuelve el resultado en formato JSON
+      return res.status(200).json({ status: 200, result });
+      res.json(result);
     }
-    res.json(result);
   } catch (error) {
+    // Maneja cualquier error que ocurra
     console.error(error);
     res.status(500).json({ message: 'Error al obtener el usuario' });
   }
 };
 
 // evitar email repetidos
-const findByEmail = async (email) => {
-  const result = await UserModel.findByEmail(email);
+const findByEmailController = async (email) => {
+  const result = await findByEmail(email);
   return result;
 };
 
+const getAllUsersController = async (req, res) => {
+  try {
+    const users = await getAllUsers();
+    // console.log('usrs bef lenght: ',users);
+    if (users.length > 0) {
+      return res.status(200).json({ status: 200, users });
+    } else {
+      return res.status(404).json({ status: 404, message: 'No hay usuarios' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: 500, message: 'Error al obtener los usuarios' });
+  }
+};
 //crear usuario  
-const createUser = async (req, res) => {
+const createUserController = async (req, res) => {
   try {
     const { nombre, email, password } = req.body; 
 
@@ -47,7 +69,7 @@ const createUser = async (req, res) => {
 };
 
 //actualizando usuario
-const updateUser = async (req, res) => {
+const updateUserController = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, password } = req.body;
@@ -86,5 +108,5 @@ const updateUser = async (req, res) => {
   }
 };
 
-console.log({ getUser, findByEmail, createUser, updateUser, deactivateUser });
-module.exports = { getUser, findByEmail, createUser, updateUser, deactivateUser };
+
+module.exports = { getUserController, getAllUsersController, findByEmail, createUserController, updateUserController, deactivateUser };

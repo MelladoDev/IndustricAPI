@@ -1,19 +1,21 @@
 const pool = require('../db/DbConnection');
 const bcrypt = require('bcryptjs');
 
-const UserModel = () => {
+
 //obtener usuario
- getUser = async (req, res) => {
+const getUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params.id;
     const result = await pool.query('SELECT * FROM usuarios WHERE id = $1', [id]);
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
+      return res.json({ status : 404, message: 'Usuario no encontrado' });
     }
-    res.json(result.rows[0]);
+    else{
+      return res.json(result.rows[0]);
+    }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al obtener el usuario' });
+    let message = 'Error al obtener el usuario';
+    return message;
   }
 };
 
@@ -22,7 +24,19 @@ const findByEmail = async (email) => {
   const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
   return result.rows[0];
 };
-  
+
+// Obtener todos los usuarios
+const getAllUsers = async () => {
+  const query = `
+    SELECT * FROM Usuarios
+  `;
+
+  // Ejecutar la consulta
+  const response = await pool.query(query);
+  // console.log('usrModelQueryResp: ',response.rows); // Para imprimir el número de filas
+  return response.rows;
+};
+
 //crear usuario  
 const createUser = async (req, res) => {
     const { nombre, email, password } = req.body; 
@@ -90,6 +104,6 @@ const updateUserCondition = async (newCondition, userId) => {
   }
   
 };
-}
 
-module.exports = {UserModel};
+
+module.exports = { getUser, getAllUsers, findByEmail, createUser, updateUser, updateUserCondition };

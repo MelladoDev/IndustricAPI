@@ -53,5 +53,4 @@ const updateProduct = async (req, res) => {
 };
 
 
-console.log({ getProducts, addProduct, updateProduct });
 module.exports = { getProducts , addProduct, updateProduct };

@@ -75,5 +75,5 @@ const deactivateOrder = async (req, res) => {
     }
 };
 
-console.log({ getOrders, addOrder, deactivateOrder });
+
 module.exports = { getOrders, addOrder, deactivateOrder };
