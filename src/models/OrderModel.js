@@ -1,4 +1,4 @@
-import pool from "../db/DbConnection";
+const pool = require("../db/DbConnection");
 
 const OrderModel = () => {
 
